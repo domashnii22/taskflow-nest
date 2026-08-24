@@ -12,11 +12,11 @@ export class Task {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   title!: string;
 
-  @Column({ nullable: true })
-  description!: string;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
   @Column({
     type: 'enum',
@@ -39,6 +39,6 @@ export class Task {
   @JoinColumn({ name: 'userId' })
   user!: User;
 
-  @Column()
-  userId!: string; // внешний ключ
+  @Column({ type: 'uuid' })
+  userId!: string;
 }
