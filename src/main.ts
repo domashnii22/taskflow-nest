@@ -16,7 +16,7 @@ async function bootstrap() {
     new TimeoutInterceptor(),
   );
 
-  app.useGlobalGuards(new ApiKeyGuard());
+  // app.useGlobalGuards(new ApiKeyGuard());
 
   // Глобальный пайп для валидации всех входящих запросов
   app.useGlobalPipes(
