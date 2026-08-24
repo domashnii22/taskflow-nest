@@ -9,62 +9,39 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { TasksService } from './tasks.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import type { Task } from './interfaces/task.interface';
 
-@Controller('tasks') // все маршруты в этом контроллере будут начинаться с /tasks
+@Controller('tasks')
 export class TasksController {
-  // Временный in-memory массив
-  private tasks = [
-    { id: '1', title: 'Изучить NestJS', status: 'todo' },
-    { id: '2', title: 'Написать пет-проект', status: 'in-progress' },
-  ];
+  constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll() {
-    return this.tasks;
+  findAll(): Task[] {
+    return this.tasksService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    const task = this.tasks.find((t) => t.id === id);
-    if (!task) {
-      throw new Error('Task not found'); // позже заменим на нормальную обработку
-    }
-    return task;
+  findOne(@Param('id') id: string): Task {
+    return this.tasksService.findOne(id);
   }
 
   @Post()
-  @HttpCode(HttpStatus.CREATED) // 201 Created
-  create(@Body() body: { title: string; status?: string }) {
-    const newTask = {
-      id: String(Date.now()),
-      title: body.title,
-      status: body.status || 'todo',
-    };
-    this.tasks.push(newTask);
-    return newTask;
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createTaskDto: CreateTaskDto): Task {
+    return this.tasksService.create(createTaskDto.title, createTaskDto.status);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() body: { title?: string; status?: string },
-  ) {
-    const task = this.tasks.find((t) => t.id === id);
-    if (!task) {
-      throw new Error('Task not found');
-    }
-    if (body.title) task.title = body.title;
-    if (body.status) task.status = body.status;
-    return task;
+  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto): Task {
+    return this.tasksService.update(id, updateTaskDto);
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT) // 204 No Content
-  remove(@Param('id') id: string) {
-    const index = this.tasks.findIndex((t) => t.id === id);
-    if (index === -1) {
-      throw new Error('Task not found');
-    }
-    this.tasks.splice(index, 1);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: string): void {
+    this.tasksService.remove(id);
   }
 }
