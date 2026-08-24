@@ -1,12 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { TrimPipe } from './common/pipes/trim.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Глобальный пайп для валидации всех входящих запросов
   app.useGlobalPipes(
+    new TrimPipe(),
     new ValidationPipe({
       whitelist: true, // удаляет свойства, которых нет в DTO
       forbidNonWhitelisted: true, // выбрасывает ошибку, если есть лишние свойства
