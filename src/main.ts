@@ -3,9 +3,18 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { TrimPipe } from './common/pipes/trim.pipe';
 import { ApiKeyGuard } from './common/guards/api-key.guard';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
+    new TimeoutInterceptor(),
+  );
 
   app.useGlobalGuards(new ApiKeyGuard());
 
