@@ -20,23 +20,28 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll(): Task[] {
+  findAll(): Promise<Task[]> {
     return this.tasksService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string): Task {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
     return this.tasksService.findOne(id);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createTaskDto: CreateTaskDto): Task {
-    return this.tasksService.create(createTaskDto.title, createTaskDto.status);
+  async create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    // Временно передаём фиктивный userId (позже будем доставать из запроса)
+    const userId = '00000000-0000-0000-0000-000000000000'; // заменим на реальный
+    return this.tasksService.create(createTaskDto, userId);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto): Task {
+  update(
+    @Param('id') id: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ): Promise<Task> {
     return this.tasksService.update(id, updateTaskDto);
   }
 

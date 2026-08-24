@@ -1,49 +1,51 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Task } from './interfaces/task.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Task } from './task.entity';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [
-    { id: '1', title: 'Изучить NestJS', status: 'todo' },
-    { id: '2', title: 'Написать пет-проект', status: 'in-progress' },
-  ];
+  constructor(
+    @InjectRepository(Task)
+    private taskRepository: Repository<Task>,
+  ) {}
 
-  findAll(): Task[] {
-    return this.tasks;
+  async findAll(): Promise<Task[]> {
+    return this.taskRepository.find({ relations: { user: true } });
   }
 
-  findOne(id: string): Task {
-    const task = this.tasks.find((t) => t.id === id);
+  async findOne(id: string): Promise<Task> {
+    const task = await this.taskRepository.findOne({
+      where: { id },
+      relations: { user: true },
+    });
     if (!task) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
     return task;
   }
 
-  create(
-    title: string,
-    status: 'todo' | 'in-progress' | 'done' = 'todo',
-  ): Task {
-    const newTask: Task = {
-      id: String(Date.now()),
-      title,
-      status,
-    };
-    this.tasks.push(newTask);
-    return newTask;
+  async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
+    const newTask = this.taskRepository.create({
+      ...createTaskDto,
+      userId, // временно передаём userId (в будущем будем получать из сессии)
+    });
+    return this.taskRepository.save(newTask);
   }
 
-  update(id: string, updateData: Partial<Omit<Task, 'id'>>): Task {
-    const task = this.findOne(id); // переиспользуем метод с проверкой существования
-    Object.assign(task, updateData);
-    return task;
+  async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
+    const task = await this.findOne(id); // проверяем существование
+    // Обновляем только переданные поля
+    Object.assign(task, updateTaskDto);
+    return this.taskRepository.save(task);
   }
 
-  remove(id: string): void {
-    const index = this.tasks.findIndex((t) => t.id === id);
-    if (index === -1) {
+  async remove(id: string): Promise<void> {
+    const result = await this.taskRepository.delete(id);
+    if (result.affected === 0) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
-    this.tasks.splice(index, 1);
   }
 }
