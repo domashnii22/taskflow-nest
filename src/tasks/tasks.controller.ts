@@ -9,13 +9,18 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import type { Task } from './interfaces/task.interface';
+import { User } from '../users/user.entity';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('tasks')
+@UseGuards(AuthGuard('jwt'))
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
@@ -30,11 +35,11 @@ export class TasksController {
   }
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    // Временно передаём фиктивный userId (позже будем доставать из запроса)
-    const userId = '00000000-0000-0000-0000-000000000000'; // заменим на реальный
-    return this.tasksService.create(createTaskDto, userId);
+  async create(
+    @Body() createTaskDto: CreateTaskDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.tasksService.create(createTaskDto, user.id);
   }
 
   @Put(':id')
