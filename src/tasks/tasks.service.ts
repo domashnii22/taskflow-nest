@@ -12,13 +12,16 @@ export class TasksService {
     private taskRepository: Repository<Task>,
   ) {}
 
-  async findAll(): Promise<Task[]> {
-    return this.taskRepository.find({ relations: { user: true } });
+  async findAll(userId: string): Promise<Task[]> {
+    return this.taskRepository.find({
+      where: { userId },
+      relations: { user: true },
+    });
   }
 
-  async findOne(id: string): Promise<Task> {
+  async findOne(id: string, userId: string): Promise<Task> {
     const task = await this.taskRepository.findOne({
-      where: { id },
+      where: { id, userId },
       relations: { user: true },
     });
     if (!task) {
@@ -30,20 +33,24 @@ export class TasksService {
   async create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
     const newTask = this.taskRepository.create({
       ...createTaskDto,
-      userId, // временно передаём userId (в будущем будем получать из сессии)
+      userId,
     });
     return this.taskRepository.save(newTask);
   }
 
-  async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    const task = await this.findOne(id); // проверяем существование
-    // Обновляем только переданные поля
+  async update(
+    id: string,
+    userId: string,
+    updateTaskDto: UpdateTaskDto,
+  ): Promise<Task> {
+    const task = await this.findOne(id, userId);
+
     Object.assign(task, updateTaskDto);
     return this.taskRepository.save(task);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.taskRepository.delete(id);
+  async remove(id: string, userId: string): Promise<void> {
+    const result = await this.taskRepository.delete({ id: id, userId: userId });
     if (result.affected === 0) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }

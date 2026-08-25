@@ -25,13 +25,16 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll(): Promise<Task[]> {
-    return this.tasksService.findAll();
+  findAll(@CurrentUser() user: User): Promise<Task[]> {
+    return this.tasksService.findAll(user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Task> {
-    return this.tasksService.findOne(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+  ): Promise<Task> {
+    return this.tasksService.findOne(id, user.id);
   }
 
   @Post()
@@ -45,14 +48,15 @@ export class TasksController {
   @Put(':id')
   update(
     @Param('id') id: string,
+    @CurrentUser() user: User,
     @Body() updateTaskDto: UpdateTaskDto,
   ): Promise<Task> {
-    return this.tasksService.update(id, updateTaskDto);
+    return this.tasksService.update(id, user.id, updateTaskDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string): void {
-    this.tasksService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: User): void {
+    this.tasksService.remove(id, user.id);
   }
 }
