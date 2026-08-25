@@ -2,10 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { TrimPipe } from './common/pipes/trim.pipe';
-import { ApiKeyGuard } from './common/guards/api-key.guard';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
+import { HttpExceptionFilter } from './common/interceptors/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +15,8 @@ async function bootstrap() {
     new TransformInterceptor(),
     new TimeoutInterceptor(),
   );
+
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // app.useGlobalGuards(new ApiKeyGuard());
 
