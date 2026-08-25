@@ -6,9 +6,33 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  singleLine: true,
+                  colorize: true,
+                },
+              }
+            : undefined,
+        // Настройки для продакшена
+        level: process.env.LOG_LEVEL || 'info',
+        // Добавляем контекст запроса
+        customProps: (req) => ({
+          context: 'HTTP',
+          traceId: req.id, // если используете correlation ID
+        }),
+        // Исключаем логирование чувствительных данных
+        redact: ['req.headers.authorization', 'req.body.password'],
+      },
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     TasksModule,
