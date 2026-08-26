@@ -11,9 +11,17 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { BullModule } from '@nestjs/bull';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
     PrometheusModule.register({
       path: '/metrics',
       defaultMetrics: {
@@ -56,6 +64,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     TasksModule,
     UsersModule,
     AuthModule,
+    QueueModule,
   ],
   controllers: [],
   providers: [

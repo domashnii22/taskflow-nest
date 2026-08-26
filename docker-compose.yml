@@ -35,6 +35,13 @@ services:
       - grafana_data:/var/lib/grafana
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: taskflow-redis
+    ports:
+      - '6379:6379'
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   grafana_data:

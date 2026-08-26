@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Task } from './task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { QueueService } from '../queue/queue.service';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class TasksService {
@@ -13,6 +15,9 @@ export class TasksService {
     private readonly logger: PinoLogger,
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private queueService: QueueService,
   ) {
     this.logger.setContext(TasksService.name);
   }
@@ -44,7 +49,14 @@ export class TasksService {
       ...createTaskDto,
       userId,
     });
-    return this.taskRepository.save(newTask);
+    await this.taskRepository.save(newTask);
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (user?.email) {
+      await this.queueService.sendWelcomeEmail(user.email, user.name);
+    }
+
+    return newTask;
   }
 
   async update(
