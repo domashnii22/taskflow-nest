@@ -4,11 +4,12 @@ import { Repository } from 'typeorm';
 import { Task } from './task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { PinoLogger } from 'nestjs-pino';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class TasksService {
   constructor(
+    @InjectPinoLogger(TasksService.name)
     private readonly logger: PinoLogger,
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
