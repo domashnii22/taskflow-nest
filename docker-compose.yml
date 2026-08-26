@@ -13,5 +13,28 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  prometheus: # ← правильный отступ: 2 пробела (как у postgres)
+    image: prom/prometheus
+    container_name: taskflow-prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: unless-stopped
+
+  grafana: # ← тоже 2 пробела
+    image: grafana/grafana
+    container_name: taskflow-grafana
+    ports:
+      - '3001:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  grafana_data:

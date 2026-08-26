@@ -5,6 +5,7 @@ import { TrimPipe } from './common/pipes/trim.pipe';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,6 +13,7 @@ async function bootstrap() {
   });
 
   app.useGlobalInterceptors(
+    new MetricsInterceptor(),
     new LoggingInterceptor(),
     new TransformInterceptor(),
     new TimeoutInterceptor(),
