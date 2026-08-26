@@ -6,9 +6,15 @@ import { User } from '../users/user.entity';
 import { QueueModule } from '../queue/queue.module';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Task, User]), UsersModule, QueueModule],
+  imports: [
+    TypeOrmModule.forFeature([Task, User]),
+    UsersModule,
+    QueueModule,
+    AnalyticsModule,
+  ],
   controllers: [TasksController],
   providers: [TasksService],
 })

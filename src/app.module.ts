@@ -13,9 +13,20 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { BullModule } from '@nestjs/bull';
 import { QueueModule } from './queue/queue.module';
+import { ClickHouseModule } from '@depyronick/nestjs-clickhouse';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
+    ClickHouseModule.register([
+      {
+        host: process.env.CLICKHOUSE_HOST ?? 'localhost',
+        port: parseInt(process.env.CLICKHOUSE_PORT ?? '8123'),
+        username: process.env.CLICKHOUSE_USER ?? 'default',
+        password: process.env.CLICKHOUSE_PASSWORD ?? 'clickhouse_secret',
+        database: process.env.CLICKHOUSE_DB ?? 'taskflow_analytics',
+      },
+    ]),
     BullModule.forRoot({
       redis: {
         host: 'localhost',
@@ -65,6 +76,7 @@ import { QueueModule } from './queue/queue.module';
     UsersModule,
     AuthModule,
     QueueModule,
+    AnalyticsModule,
   ],
   controllers: [],
   providers: [

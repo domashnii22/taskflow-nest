@@ -7,6 +7,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { QueueService } from '../queue/queue.service';
 import { User } from '../users/user.entity';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 @Injectable()
 export class TasksService {
@@ -18,6 +19,7 @@ export class TasksService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private queueService: QueueService,
+    private analyticsService: AnalyticsService,
   ) {
     this.logger.setContext(TasksService.name);
   }
@@ -56,6 +58,13 @@ export class TasksService {
       await this.queueService.sendWelcomeEmail(user.email, user.name);
     }
 
+    await this.analyticsService.logEvent({
+      action: 'create',
+      task_id: newTask.id,
+      user_id: userId,
+      status: newTask.status,
+    });
+
     return newTask;
   }
 
@@ -68,6 +77,16 @@ export class TasksService {
     const task = await this.findOne(id, userId);
 
     Object.assign(task, updateTaskDto);
+
+    if (updateTaskDto.status) {
+      await this.analyticsService.logEvent({
+        action: 'status_change',
+        task_id: id,
+        user_id: userId,
+        status: updateTaskDto.status,
+      });
+    }
+
     return this.taskRepository.save(task);
   }
 

@@ -13,7 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  prometheus: # ← правильный отступ: 2 пробела (как у postgres)
+  prometheus:
     image: prom/prometheus
     container_name: taskflow-prometheus
     ports:
@@ -24,7 +24,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     restart: unless-stopped
 
-  grafana: # ← тоже 2 пробела
+  grafana:
     image: grafana/grafana
     container_name: taskflow-grafana
     ports:
@@ -42,6 +42,21 @@ services:
       - '6379:6379'
     restart: unless-stopped
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: taskflow-clickhouse
+    ports:
+      - '8123:8123'
+      - '9000:9000'
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    environment:
+      - CLICKHOUSE_DB=taskflow_analytics
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=clickhouse_secret
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   grafana_data:
+  clickhouse_data:
